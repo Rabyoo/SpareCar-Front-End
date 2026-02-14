@@ -5,7 +5,21 @@ url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,70
 
 
 
+/* إخفاء scrollbar لكن السماح بالـ scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
+/* تحسين تجربة الـ scroll على الموبايل */
+.scrollbar-hide {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
 
 
 

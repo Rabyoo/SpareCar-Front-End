@@ -69,7 +69,7 @@ export default function AuthSuccess() {
           setUserData(data.user);
           setStatus("success");
           setMessage(
-            `✅ مرحباً ${data.user.displayName}! تم تسجيل الدخول بنجاح`
+            `✅ مرحباً ${data.user.displayName}! تم تسجيل الدخول بنجاح`,
           );
 
           // Start countdown
@@ -88,7 +88,7 @@ export default function AuthSuccess() {
 
         setStatus("error");
         setMessage(
-          error.message || "حدث خطأ أثناء المصادقة. يرجى المحاولة مرة أخرى."
+          error.message || "حدث خطأ أثناء المصادقة. يرجى المحاولة مرة أخرى.",
         );
         redirectAfterDelay("/login");
       }

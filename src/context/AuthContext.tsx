@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean; // ⭐ أضف هذا السطر
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => void;
@@ -23,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const [isBackendConnected, setIsBackendConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -32,10 +34,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [user]);
 
-  // تحقق من اتصال الـ Backend عند تحميل التطبيق
-  useEffect(() => {
-    checkBackendConnection();
-  }, []);
+ useEffect(() => {
+   // عند تحميل الـ App
+   const initAuth = async () => {
+     setLoading(true); // تبدأ التحميل
+     const isLoggedIn = await checkAuth(); // تحقق من الـ localStorage أو backend
+     setLoading(false); // انتهاء التحميل
+     if (!isLoggedIn) {
+       setUser(null); // لو مش متسجل دخول
+     }
+   };
+
+   initAuth();
+ }, []);
 
   // عدل checkBackendConnection ليصبح:
   const checkBackendConnection = async () => {
@@ -75,7 +86,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string,
+    role?: string,
+  ): Promise<boolean> => {
     try {
       console.log("🔐 Attempting login with:", email);
 
@@ -93,18 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
           const response = await fetch(endpoint, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({
-              email: email.trim(),
-              password,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: email.trim(), password, role }),
           });
 
           console.log(
-            `📡 Response status: ${response.status} from ${endpoint}`
+            `📡 Response status: ${response.status} from ${endpoint}`,
           );
 
           if (response.ok) {
@@ -130,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setUser(user);
             localStorage.setItem(
               "token",
-              data.token || data.accessToken || "dummy-token"
+              data.token || data.accessToken || "dummy-token",
             );
             localStorage.setItem("user", JSON.stringify(user));
 
@@ -210,7 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (response.ok) {
@@ -242,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const register = async (
     email: string,
     password: string,
-    name: string
+    name: string,
   ): Promise<boolean> => {
     // Mock registration - يمكنك تحديثها للـ Backend
     const newUser: User = {
@@ -275,6 +284,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         user,
+        loading, // ⭐ أضف هذا في القيمة المعادة
         login,
         register,
         logout,

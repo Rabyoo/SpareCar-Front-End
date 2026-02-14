@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, Star, Car, Tag } from "lucide-react";
 import { IoCartOutline } from "react-icons/io5";
 import { useCart } from "@/context/CartContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // تعريف الأنواع الجديدة لتتوافق مع بيانات API
 interface Product {
@@ -44,6 +44,23 @@ export default function ProductCard({
   const { addToCart } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(false);
   const navigate = useNavigate();
+  const [vendorInfo, setVendorInfo] = useState(null);
+
+  useEffect(() => {
+    fetchVendorInfo();
+  }, [product.vendor]);
+
+  const fetchVendorInfo = async () => {
+    if (product.vendor) {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/vendor/${product.vendor}`,
+      );
+      const data = await response.json();
+      if (data.success) {
+        setVendorInfo(data.vendor);
+      }
+    }
+  };
 
   // حالات للحجم واللون
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -285,6 +302,24 @@ export default function ProductCard({
           {needsSelection ? "Select Options" : "Add to Cart"}
         </Button>
       </CardFooter>
+
+      {vendorInfo && (
+        <div className="mt-3 flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full overflow-hidden">
+            <img
+              src={vendorInfo.logo || "/default-vendor.png"}
+              alt={vendorInfo.vendorName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <span className="text-sm text-gray-600">{vendorInfo.vendorName}</span>
+          {vendorInfo.rating > 0 && (
+            <Badge variant="outline" className="text-xs">
+              {vendorInfo.rating.toFixed(1)} ★
+            </Badge>
+          )}
+        </div>
+      )}
     </Card>
   );
 }

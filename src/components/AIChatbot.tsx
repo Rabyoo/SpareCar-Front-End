@@ -1,3 +1,5 @@
+// frontend/src/components/AIChatbot.tsx
+"use client";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +13,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeCarProblem } from "@/lib/aiService";
-import { BiSolidCarMechanic } from "react-icons/bi";
+import { RiRobot3Line } from "react-icons/ri";
+import Logo from "../../public/Logo.png";
 
 interface Message {
   id: string;
@@ -23,6 +26,7 @@ interface Message {
 
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showWelcomeBubble, setShowWelcomeBubble] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -39,6 +43,15 @@ export default function AIChatbot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // إخفاء الرسالة الترحيبية بعد 8 ثواني
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcomeBubble(false);
+    }, 6000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -50,7 +63,7 @@ export default function AIChatbot() {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(
         textareaRef.current.scrollHeight,
-        120
+        120,
       )}px`;
     }
   }, [inputMessage]);
@@ -72,15 +85,21 @@ export default function AIChatbot() {
     }
   };
 
+  // في دالة handleSendMessage
   const handleSendMessage = async () => {
     const textToSend = inputMessage.trim();
 
-    if (!textToSend && !selectedImage) return;
+    // التحقق من وجود محتوى
+    if (!textToSend && !selectedImage) {
+      toast.error("يرجى كتابة رسالة أو رفع صورة");
+      return;
+    }
 
+    // إنشاء رسالة المستخدم
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: textToSend || "تم رفع صورة للتحليل",
+      content: textToSend || "صورة للمشكلة",
       image: selectedImage || undefined,
       timestamp: new Date(),
     };
@@ -90,24 +109,34 @@ export default function AIChatbot() {
     setIsLoading(true);
 
     try {
+      // إرسال للـ backend
       const aiResponse = await analyzeCarProblem(
-        textToSend,
-        selectedImage || undefined
+        textToSend || "لدي صورة لمشكلة في السيارة، أرجو تحليلها",
       );
 
+      // إنشاء رسالة المساعد
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: aiResponse.response,
+        content: aiResponse.response || "لم أتلق رداً من الخادم",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      setSelectedImage(null);
-    } catch (error) {
-      toast.error("حدث خطأ في معالجة الرسالة");
+    } catch (error: any) {
       console.error("Chat error:", error);
+
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `❌ عذراً، حدث خطأ: ${error.message || "يرجى المحاولة مرة أخرى"}`,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+      toast.error("فشل في الاتصال بالخادم");
     } finally {
+      setSelectedImage(null);
       setIsLoading(false);
     }
   };
@@ -137,23 +166,74 @@ export default function AIChatbot() {
     <>
       {/* Floating Chat Button */}
       {!isOpen && (
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-8 right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-orange-600 to-orange-600  z-50 transition-all hover:scale-105"
-          size="icon">
-          <BiSolidCarMechanic className="!w-6 !h-6 text-gray-950" />
-          <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
-        </Button>
+        <div className="fixed bottom-8 right-6 z-50">
+          {/* Welcome Bubble with Animation */}
+          {showWelcomeBubble && (
+            <div className="absolute bottom-16 right-0 mb-2 animate-in slide-in-from-bottom-3 fade-in duration-500">
+              <div className="relative">
+                {/* Speech Bubble */}
+                <div className="bg-white rounded-2xl shadow-2xl p-2 max-w-[280px] border-2 border-orange-200 animate-bounce-gentle">
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center animate-pulse">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <div className="w-36 text-lg">
+                      <p className="text-sm font-bold text-gray-800 mb-1">
+                        مرحباً! 👋
+                      </p>
+                      <p className="text-xs text-gray-600 leading-relaxed">
+                        كلمني أنا معاك في أي وقت للمساعدة في مشاكل سيارتك! 🚗
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowWelcomeBubble(false)}
+                      className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Typing Indicator Animation */}
+                  <div className="flex gap-1 mt-2 ml-1">
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-typing-dot-1"></span>
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-typing-dot-2"></span>
+                    <span className="w-2 h-2 bg-orange-400 rounded-full animate-typing-dot-3"></span>
+                  </div>
+                </div>
+
+                {/* Arrow pointing to button */}
+                <div className="absolute -bottom-2 right-6 w-4 h-4 bg-white border-r-2 border-b-2 border-orange-200 transform rotate-45"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Chat Button with Pulse Animation */}
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+              setShowWelcomeBubble(false);
+            }}
+            className="h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-orange-600 to-orange-600 transition-all hover:scale-110 animate-float relative group"
+            size="icon">
+            <div className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-75"></div>
+            <RiRobot3Line className="!w-6 !h-6 text-gray-950 relative z-10 group-hover:scale-110 transition-transform" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse z-20"></span>
+
+            {/* Ripple Effect */}
+            <span className="absolute inset-0 rounded-full bg-orange-400 opacity-50 animate-ripple"></span>
+          </Button>
+        </div>
       )}
 
-      {/* Chat Window - Fixed Size like ChatGPT */}
+      {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-4 right-4 w-[380px] h-[600px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-5 rounded-2xl overflow-hidden border-2 border-gray-200">
-          {/* Header - Fixed */}
-          <div className="bg-gradient-to-r from-orange-600 to-orange-600 text-white p-4 flex items-center justify-between shrink-0">
+        <Card className="fixed bottom-4 right-4 w-[380px] h-[550px] shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-5 rounded-2xl overflow-hidden border-2">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-4 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                <Sparkles className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <img src={Logo} alt="logo" />
               </div>
               <div>
                 <h3 className="font-bold text-sm">مساعد السيارات الذكي</h3>
@@ -169,7 +249,7 @@ export default function AIChatbot() {
                 variant="ghost"
                 size="icon"
                 onClick={clearChat}
-                className="text-white hover:bg-white/20 rounded-full h-8 w-8"
+                className="text-white hover:bg-red-500 rounded-full h-8 w-8"
                 title="مسح المحادثة">
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -178,21 +258,16 @@ export default function AIChatbot() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white/20 rounded-full h-8 w-8">
+                className="text-white hover:bg-white rounded-full h-8 w-8">
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          {/* Messages Area - Scrollable */}
+          {/* Messages Area */}
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4"
-            style={{
-              scrollBehavior: "smooth",
-              overflowY: "auto",
-              maxHeight: "calc(600px - 140px)",
-            }}>
+            className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4">
             {messages.map((message) => (
               <div key={message.id}>
                 <div
@@ -246,7 +321,7 @@ export default function AIChatbot() {
             )}
           </div>
 
-          {/* Input Area - Fixed at Bottom */}
+          {/* Input Area */}
           <div className="border-t bg-white p-3 shrink-0">
             {/* Image Preview */}
             {selectedImage && (
@@ -299,7 +374,7 @@ export default function AIChatbot() {
               />
 
               <Button
-                onClick={() => handleSendMessage()}
+                onClick={handleSendMessage}
                 disabled={isLoading || (!inputMessage.trim() && !selectedImage)}
                 className="shrink-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 h-10 w-10 p-0">
                 <Send className="h-5 w-5" />
@@ -313,16 +388,100 @@ export default function AIChatbot() {
         </Card>
       )}
 
-      {/* Mobile Responsive Styles */}
-      <style>{`
-        @media (max-width: 640px) {
-          .fixed.bottom-4.right-4 {
-            bottom: 1rem;
-            right: 1rem;
-            left: 1rem;
-            width: calc(100vw - 2rem) !important;
-            max-width: none;
+      {/* CSS Animations */}
+      <style tsx>{`
+        @keyframes bounce-gentle {
+          0%,
+          100% {
+            transform: translateY(0);
           }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+
+        @keyframes float {
+          0%,
+          100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+
+        @keyframes ripple {
+          0% {
+            transform: scale(1);
+            opacity: 0.5;
+          }
+          100% {
+            transform: scale(1.5);
+            opacity: 0;
+          }
+        }
+
+        @keyframes typing-dot-1 {
+          0%,
+          60%,
+          100% {
+            transform: translateY(0);
+            opacity: 0.4;
+          }
+          30% {
+            transform: translateY(-8px);
+            opacity: 1;
+          }
+        }
+
+        @keyframes typing-dot-2 {
+          0%,
+          60%,
+          100% {
+            transform: translateY(0);
+            opacity: 0.4;
+          }
+          40% {
+            transform: translateY(-8px);
+            opacity: 1;
+          }
+        }
+
+        @keyframes typing-dot-3 {
+          0%,
+          60%,
+          100% {
+            transform: translateY(0);
+            opacity: 0.4;
+          }
+          50% {
+            transform: translateY(-8px);
+            opacity: 1;
+          }
+        }
+
+        .animate-bounce-gentle {
+          animation: bounce-gentle 3s ease-in-out infinite;
+        }
+
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
+        }
+
+        .animate-ripple {
+          animation: ripple 2s ease-out infinite;
+        }
+
+        .animate-typing-dot-1 {
+          animation: typing-dot-1 1.4s ease-in-out infinite;
+        }
+
+        .animate-typing-dot-2 {
+          animation: typing-dot-2 1.4s ease-in-out infinite;
+        }
+
+        .animate-typing-dot-3 {
+          animation: typing-dot-3 1.4s ease-in-out infinite;
         }
       `}</style>
     </>

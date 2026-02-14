@@ -23,7 +23,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: "customer" | "admin";
+  role: "customer" | "admin" | "vendor";
   token: string;
 }
 

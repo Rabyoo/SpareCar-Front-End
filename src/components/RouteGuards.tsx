@@ -1,61 +1,105 @@
+// frontend/src/components/RouteGuards.tsx
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import { useVendor } from "../context/VendorContext";
 
-// ===========================================
-// 1. Admin Route - للأدمن فقط
-// ===========================================
-export function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin } = useAuth();
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+  </div>
+);
+
+/* =======================
+   Public Route
+   ======================= */
+export const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
   const location = useLocation();
 
-  // لو مش مسجل دخول → روح Login
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (loading) {
+    return <LoadingSpinner />;
   }
 
-  // لو مسجل بس مش Admin → روح للصفحة الرئيسية
-  if (!isAdmin()) {
+  const publicAuthPages = [
+    "/user/login",
+    "/user/register",
+    "/vendor/login",
+    "/vendor/register",
+  ];
+
+  // ✅ Welcome page متاحة للجميع
+  if (location.pathname === "/") {
+    return <>{children}</>;
+  }
+
+  return <>{children}</>;
+};
+
+/* =======================
+   Customer Route
+   ======================= */
+export const CustomerRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return <Navigate to="/user/login" replace />;
+  }
+
+  if (user.role !== "customer") {
+    if (user.role === "vendor") {
+      return <Navigate to="/vendor/dashboard" replace />;
+    }
+    if (user.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+  }
+
+  return <>{children}</>;
+};
+
+/* =======================
+   Vendor Route
+   ======================= */
+export const VendorRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user) {
+    return <Navigate to="/vendor/login" replace />;
+  }
+
+  if (user.role !== "vendor") {
+    if (user.role === "admin") {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/home" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+/* =======================
+   Admin Route
+   ======================= */
+export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!user || user.role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
-}
-
-// ===========================================
-// 2. Customer Route - للعملاء فقط (مش Admin)
-// ===========================================
-export function CustomerRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin } = useAuth();
-  const location = useLocation();
-
-  // لو مش مسجل دخول → روح Login
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-  }
-
-  // لو Admin → روح Dashboard
-  if (isAdmin()) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-// ===========================================
-// 3. Public Route - للي مش مسجلين دخول بس
-// ===========================================
-export function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin } = useAuth();
-
-  // لو مسجل دخول كـ Admin → Dashboard
-  if (user && isAdmin()) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  // لو مسجل دخول كـ Customer → Home
-  if (user && !isAdmin()) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-}
+};

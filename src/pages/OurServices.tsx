@@ -1,9 +1,15 @@
 import { useEffect, useRef } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import ServiceCard from "@/components/ServiceCard";
 import { Button } from "@/components/ui/button";
-import { Wrench, Smartphone, Headphones, ArrowDown } from "lucide-react";
+import {
+  Wrench,
+  Smartphone,
+  Headphones,
+  ArrowDown,
+  Truck,
+  Droplets,
+  Car,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Index() {
@@ -24,7 +30,7 @@ export default function Index() {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     document.querySelectorAll(".fade-in-section").forEach((el) => {
@@ -37,20 +43,12 @@ export default function Index() {
   //* Services Data
   const services = [
     {
-      title: "LiteRoad Service",
+      title: "Lite Maintenance Service",
       description:
         "Comprehensive roadside assistance service - We provide immediate help on the road anytime, anywhere. Our specialized team is ready to handle all emergency situations.",
-      image: "/assets/literoad-service-icon.jpg",
+      image: "/assets/vanCar.jpg",
       link: "/services/liteRoad",
       icon: Wrench,
-    },
-    {
-      title: "Mobile Machine",
-      description:
-        "Mobile diagnostic machine - The latest diagnostic and inspection technologies for your vehicle wherever you are. We use advanced equipment to ensure accurate inspection and fast service.",
-      image: "/assets/mobile-machine-icon.jpg",
-      link: "/services/mobilMachine",
-      icon: Smartphone,
     },
     {
       title: "Customer Support",
@@ -60,6 +58,66 @@ export default function Index() {
       link: "/customerSupport",
       icon: Headphones,
     },
+    {
+      title: " Mechanic & Electrician",
+      description:
+        "Professional automotive experts with AI diagnosis and real-time tracking, delivering accurate fault detection and faster repair decisions. We combine advanced technology.",
+      image: "/assets/the-mechanic.png",
+      link: "/request-mobile-professional",
+      icon: Wrench,
+    },
+    {
+      title: "Winch Helpo Service",
+      description: "Premium & Standard towing services with live tracking",
+      image: "/assets/winch-helpo.png",
+      link: "/rescue-winch",
+      icon: Truck,
+    },
+    // {
+    //   title: "Regular Maintenance Service",
+    //   description:
+    //     " Scheduled maintenance packages for optimal vehicle performance",
+    //   image: "/assets/maintenance.jpg",
+    //   link: "/regular-maintenance",
+    //   icon: Truck,
+    // },
+    {
+      title: "Washly - Car Wash Service",
+      description:
+        "On-demand professional car wash at your location. Choose from exterior, interior, full detailing.",
+      image: "/assets/washly.jpg",
+      link: "/services/washly",
+      icon: Droplets,
+      badge: "NEW",
+      badgeColor: "bg-[#ff6b35]",
+    },
+    {
+      title: "Learn Driving Service",
+      description:
+        "Learn to drive from scratch to professionalism with the best accredited academies in Egypt. Professional trainers, modern cars.",
+      image: "/assets/learnDriving.jpg",
+      link: "/learn-driving",
+      icon: Car,
+      badge: "جديد",
+      badgeColor: "bg-[#ff6b35]",
+      features: [
+        "أكاديميات معتمدة",
+        "مدربين محترفين",
+        "شهادات رسمية",
+        "ضمان النجاح",
+      ],
+    },
+    // {
+    //   title: "Car Rental Service",
+    //   description:
+    //     "Rent the perfect car for your trip. Wide range of cars, competitive prices, secure booking, and free delivery in some areas.",
+    //   image: "/assets/carRental.jpg",
+    //   link: "/car-rental",
+    //   icon: Car,
+    //   badge: "شائع",
+    //   badgeColor: "bg-blue-500",
+    //   features: ["سيارات متنوعة", "حجز آمن", "تأمين شامل", "دعم 24/7"],
+    // },
   ];
 
   return (
@@ -87,7 +145,7 @@ export default function Index() {
             </h1>
 
             <p
-              className="text-xl text-gray-100 md:text-2xl text-muted-foreground leading-relaxed animate-fade-in-up"
+              className="text-xl text-white md:text-2xl text-muted-foreground leading-relaxed animate-fade-in-up"
               style={{ animationDelay: "0.2s" }}>
               We provide a comprehensive range of specialized automotive
               services

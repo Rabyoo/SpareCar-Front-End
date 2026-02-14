@@ -6,10 +6,16 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Footer() {
   const [email, setEmail] = useState("");
 
+  //* Handle Subscribe */
   const handleSubscribe = (e) => {
     e.preventDefault();
     console.log("Subscribed:", email);
     setEmail("");
+  };
+
+  //* Scroll to top on link click
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   //* Navigator to change path direct
@@ -38,7 +44,7 @@ export default function Footer() {
           {/* Column 1 */}
           <div>
             <Link
-              to="/"
+              to="/home"
               onClick={() => {
                 window.scrollTo({ behavior: "smooth", top: 0 });
               }}
@@ -73,35 +79,50 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400 text-sm">
               <li>
                 <button
-                  onClick={() => navigate("/products")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/products");
+                  }}
                   className="hover:text-white transition-colors">
                   All Products
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/products?category=Engine Parts")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/products?category=Engine Parts");
+                  }}
                   className="hover:text-white transition-colors">
                   Engine Parts
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/products?category=Brakes")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/products?category=Brakes");
+                  }}
                   className="hover:text-white transition-colors">
                   Brakes
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/products?category=Electronics")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/products?category=Electronics");
+                  }}
                   className="hover:text-white transition-colors">
                   Electronics
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/products?category=Suspension")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/products?category=Suspension");
+                  }}
                   className="hover:text-white transition-colors">
                   Suspension
                 </button>
@@ -117,35 +138,50 @@ export default function Footer() {
             <ul className="space-y-3 text-gray-400 text-sm mb-8">
               <li>
                 <button
-                  onClick={() => navigate("/contactUs")}
+                  onClick={() => {
+                    navigate("/contactUs");
+                    scrollToTop();
+                  }}
                   className="hover:text-white transition-colors">
                   Contact Us
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/shippingInfo")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/shippingInfo");
+                  }}
                   className="hover:text-white transition-colors">
                   Shipping Info
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/returns")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/returns");
+                  }}
                   className="hover:text-white transition-colors">
                   Returns
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/faq")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/faq");
+                  }}
                   className="hover:text-white transition-colors">
                   FAQ
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => {
+                    scrollToTop();
+                    navigate("/profile");
+                  }}
                   className="hover:text-white transition-colors">
                   Track Order
                 </button>

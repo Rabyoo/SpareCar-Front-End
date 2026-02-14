@@ -10,6 +10,7 @@ import {
   Car,
   Search,
   Filter,
+  X,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { mockProducts } from "@/lib/mockData";
@@ -23,12 +24,17 @@ import {
   carModels,
   engineTypes,
 } from "../data/Content_Option.js";
+import { useAuth } from "../context/AuthContext.js";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedMaker, setSelectedMaker] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
   const [selectedEngine, setSelectedEngine] = useState("");
+  const [isVehicleSupported, setIsVehicleSupported] = useState<boolean | null>(
+    null,
+  );
+  const [checkingVehicle, setCheckingVehicle] = useState(false);
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [regNumber, setRegNumber] = useState("");
@@ -37,6 +43,38 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showProducts, setShowProducts] = useState(false);
+  const { user } = useAuth();
+  
+  // إضافة للتحقق من نوع المستخدم
+  const getUserType = () => {
+    if (!user) return 'guest';
+    return user.role; // 'customer', 'vendor', 'admin'
+  };
+
+  // إضافة سكشن للتجار
+  const renderVendorSection = () => {
+    if (getUserType !== "vendor") return null;
+
+    return (
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-orange-900 mb-2">
+              Vendor Dashboard Access
+            </h3>
+            <p className="text-orange-700">
+              Manage your products and track sales from your vendor dashboard
+            </p>
+          </div>
+          <Link
+            to="/vendor/dashboard"
+            className="bg-orange-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-orange-700">
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  };
 
   //* Carousel auto-slide effect
   useEffect(() => {
@@ -45,6 +83,23 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(timer);
   }, []);
+
+  //* Check Vehicle Support
+  const checkVehicleSupport = async (maker: string): Promise<boolean> => {
+    try {
+      const response = await fetch(import.meta.env.VITE_GITHUB_API_PRODUCTS);
+      const data = await response.json();
+
+      return data.some(
+        (product: any) =>
+          product.carBrand &&
+          product.carBrand.toLowerCase().includes(maker.toLowerCase()),
+      );
+    } catch (error) {
+      console.error("Vehicle check failed", error);
+      return false;
+    }
+  };
 
   //* Handle Add to Cart
   const handleAddToCart = (product) => {
@@ -55,31 +110,44 @@ export default function Home() {
   const featuredProducts = mockProducts.slice(0, 5);
 
   //* Search Handlers
-  const handleRegSearch = () => {
-    if (!regNumber.trim()) {
-      alert("Please enter a registration number");
-      return;
-    }
-    setSearchResults({
-      type: "registration",
-      regNumber: regNumber,
-      found: true,
-      vehicle: {
-        maker: "Ford",
-        model: "Focus",
-        year: "2018",
-        engine: "1.6L Petrol",
-      },
-    });
-    setShowProducts(false);
-  };
+  // const handleRegSearch = () => {
+  //   if (!regNumber.trim()) {
+  //     alert("Please enter a registration number");
+  //     return;
+  //   }
+  //   setSearchResults({
+  //     type: "registration",
+  //     regNumber: regNumber,
+  //     found: true,
+  //     vehicle: {
+  //       maker: "Ford",
+  //       model: "Focus",
+  //       year: "2018",
+  //       engine: "1.6L Petrol",
+  //     },
+  //   });
+  //   setShowProducts(false);
+  // };
 
   //* Manual Search Handler
-  const handleManualSearch = () => {
+  const handleManualSearch = async () => {
     if (!selectedMaker || !selectedModel || !selectedEngine) {
       alert("Please select maker, model and engine");
       return;
     }
+
+    setCheckingVehicle(true);
+    setIsVehicleSupported(null);
+
+    const supported = await checkVehicleSupport(selectedMaker);
+
+    setCheckingVehicle(false);
+    setIsVehicleSupported(supported);
+
+    if (!supported) {
+      return; // ❌ نقفل البحث هنا
+    }
+
     setSearchResults({
       type: "manual",
       found: true,
@@ -89,6 +157,7 @@ export default function Home() {
         engine: selectedEngine,
       },
     });
+
     setShowProducts(false);
   };
 
@@ -104,12 +173,15 @@ export default function Home() {
     setSelectedCategory("all");
   };
 
-  //* Fetch Products with Vehicle Filter - النسخة المحسنة
+  //* Fetch Products with Vehicle Filter
   const fetchProducts = async () => {
+     if (isVehicleSupported === false) {
+       return;
+     }
     setLoading(true);
     try {
       const response = await fetch(
-        "https://raw.githubusercontent.com/Rabyoo/api-products-sparecar/refs/heads/main/products.json"
+        "https://raw.githubusercontent.com/Rabyoo/api-products-sparecar/refs/heads/main/products.json",
       );
       const data = await response.json();
 
@@ -335,6 +407,7 @@ export default function Home() {
                             setSelectedMaker(e.target.value);
                             setSelectedModel("");
                             setSelectedEngine("");
+                            setIsVehicleSupported(null);
                           }}
                           className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#0066cc] appearance-none bg-white cursor-pointer">
                           <option value="">Select maker</option>
@@ -358,6 +431,7 @@ export default function Home() {
                           onChange={(e) => {
                             setSelectedModel(e.target.value);
                             setSelectedEngine("");
+                            setIsVehicleSupported(null);
                           }}
                           disabled={!selectedMaker}
                           className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#0066cc] appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer">
@@ -380,7 +454,10 @@ export default function Home() {
                         </div>
                         <select
                           value={selectedEngine}
-                          onChange={(e) => setSelectedEngine(e.target.value)}
+                          onChange={(e) => {
+                            setSelectedEngine(e.target.value);
+                            setIsVehicleSupported(null);
+                          }}
                           disabled={!selectedModel}
                           className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#0066cc] appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed cursor-pointer">
                           <option value="">Select engine</option>
@@ -396,12 +473,30 @@ export default function Home() {
                       <button
                         onClick={handleManualSearch}
                         disabled={
-                          !selectedMaker || !selectedModel || !selectedEngine
+                          !selectedMaker ||
+                          !selectedModel ||
+                          !selectedEngine ||
+                          checkingVehicle ||
+                          isVehicleSupported === false
                         }
                         className="w-full bg-[#0066cc] text-white py-3 rounded font-bold hover:bg-[#0052a3] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                        <Search size={18} />
-                        Search
+                        {checkingVehicle ? (
+                          "Checking..."
+                        ) : (
+                          <>
+                            <Search size={18} />
+                            Search
+                          </>
+                        )}
                       </button>
+                      {isVehicleSupported === false && (
+                        <div className="bg-red-50 border border-red-200 rounded p-3">
+                          <p className="text-red-700 text-sm font-medium">
+                            ❌ Spare parts are not available for the selected
+                            vehicle.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-4 text-center">
@@ -537,9 +632,9 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
             SPARECAR AUTO PARTS STORE: BUY CAR PARTS ONLINE
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {categories.map((category, i) => (
-              <Link key={i} to={`/products?category=${category.name}`}>
+          <div className="flex items-center justify-around md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {accessories.map((category, i) => (
+              <Link key={i} to={`#`}>
                 <div className="bg-white rounded-lg p-4 text-center hover:shadow-lg transition-shadow cursor-pointer border border-gray-200">
                   <div className="w-20 h-20 mx-auto mb-3 rounded-full overflow-hidden bg-gray-100">
                     <img
@@ -566,7 +661,7 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {accessories.map((item, i) => (
-              <Link key={i} to={`/products?category=${item.name}`}>
+              <Link key={i} to={`#`}>
                 <div className="relative h-64 rounded-lg overflow-hidden group cursor-pointer">
                   <img
                     src={item.image}

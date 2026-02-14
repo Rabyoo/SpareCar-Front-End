@@ -85,7 +85,7 @@ export const manufacturers = [
   },
   {
     name: "BREMBO",
-    logo: "https://cdn.worldvectorlogo.com/logos/brembo.svg",
+    logo: "https://logos-world.net/wp-content/uploads/2023/03/Brembo-Logo.jpg",
   },
   {
     name: "MANN-FILTER",
@@ -97,7 +97,7 @@ export const manufacturers = [
   },
   {
     name: "ZF",
-    logo: "https://cdn.worldvectorlogo.com/logos/zf-friedrichshafen.svg",
+    logo: "https://logos-world.net/wp-content/uploads/2023/03/ZF-Logo.png",
   },
   {
     name: "MAHLE",
@@ -113,7 +113,7 @@ export const manufacturers = [
   },
   {
     name: "BRK",
-    logo: "https://logo.clearbit.com/brembo.com",
+    logo: "https://tse2.mm.bing.net/th/id/OIP.U3E8UJ7tG4e7eWNq71fAuQHaEc?rs=1&pid=ImgDetMain&o=7&rm=3",
   },
 ];
 

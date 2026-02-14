@@ -59,30 +59,10 @@ export default function Navbar() {
   const [myVehicles, setMyVehicles] = useState([
     { id: 1, name: "BMW 320i", year: "2018" },
   ]);
-  const { getCartCount } = useCart();
+  const { getCartCount, getCartTotal } = useCart();
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const cartCount = getCartCount();
-
-  // Car Brands List
-  // const carBrands = [
-  //   "Toyota",
-  //   "Honda",
-  //   "Nissan",
-  //   "Mazda",
-  //   "Hyundai",
-  //   "Kia",
-  //   "BMW",
-  //   "Mercedes-Benz",
-  //   "Audi",
-  //   "Volkswagen",
-  //   "Ford",
-  //   "Chevrolet",
-  //   "Peugeot",
-  //   "Renault",
-  //   "Citroen",
-  //   "Fiat",
-  // ];
 
   // Car Parts Categories - بدون subcategories
   const carPartsCategories = [
@@ -154,7 +134,7 @@ export default function Navbar() {
   ];
 
   // حدّد وقت انتهاء العرض
-  const targetDate = new Date("2025-12-31T23:59:59").getTime();
+  const targetDate = new Date("2026-12-31T23:59:59").getTime();
 
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
@@ -190,7 +170,7 @@ export default function Navbar() {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(
-        `/products?search=${encodeURIComponent(searchQuery)}&filter=all`
+        `/products?search=${encodeURIComponent(searchQuery)}&filter=all`,
       );
     }
   };
@@ -296,11 +276,14 @@ export default function Navbar() {
                       className="transition-transform border-l-2 border-gray-800 absolute right-0 mr-2"
                     />
                   </button>
+                  <div id="google_translate_element flex items-center">
+                    {/* btn Here */}
+                  </div>
                 </div>
               )}
 
               {/* Logo - Visible on Mobile */}
-              <Link to="/" className="flex md:hidden items-center">
+              <Link to="/home" className="flex md:hidden items-center">
                 <img
                   src={logo}
                   alt="SpareCar"
@@ -317,7 +300,7 @@ export default function Navbar() {
             {/* Center Section - Logo & Search (Desktop) */}
             {!userIsAdmin && (
               <div className="hidden md:flex flex-1 max-w-3xl flex-col items-center justify-center gap-3">
-                <Link to="/" className="flex items-center important mr-20">
+                <Link to="/home" className="flex items-center important mr-20 ">
                   <img
                     src={logo}
                     alt="SpareCar"
@@ -367,11 +350,20 @@ export default function Navbar() {
                         <div className="hidden sm:flex items-center gap-1 text-xs mt-1">
                           <div>
                             <h2 className="text-gray-100 text-[16px] font-medium flex flex-col-reverse">
-                              <span>0</span> items
+                              <span className="text-[#ff6b35]">
+                                {cartCount}
+                              </span>{" "}
+                              items
                             </h2>
                           </div>
                           <span className="text-white font-medium text-[16px] ml-5">
-                            £0.00
+                            <h2>Total</h2>
+                            <span className="text-[#ff6b35]">
+                              {(
+                                getCartTotal() + (getCartTotal() > 100 ? 0 : 0)
+                              ).toFixed(2)}{" "}
+                              L.E
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -519,68 +511,97 @@ export default function Navbar() {
 
         {/* Secondary Navigation Bar - Customer Only */}
         {!userIsAdmin && (
-          <div className="bg-[#132530] min-w-full flex justify-center items-center p-2 scrollbar-hide">
-            <div className="max-w-full mx-auto px-3 sm:px-6 py-2">
-              <div className="flex items-center gap-3 lg:gap-12 sm:gap-6 text-xs sm:text-sm whitespace-nowrap">
+          <div className="bg-[#132530] w-full overflow-x-auto scrollbar-hide">
+            <div className="min-w-max px-3 sm:px-6 py-3">
+              <div className="flex items-center justify-start sm:justify-center gap-4 sm:gap-6 lg:gap-8 xl:gap-12">
+                {/* Truck Parts */}
                 <Link
                   to="/products?category=Truck Parts"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <Truck size={22} className="sm:w-[22px] sm:h-[22px]" />
-                  <span className="font-semibold">Truck parts</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <Truck className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Truck parts
+                  </span>
                 </Link>
+
+                {/* Car Accessories */}
                 <Link
                   to="/products?category=Accessories"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <IoIosColorFill
-                    size={22}
-                    className="sm:w-[22px] sm:h-[22px]"
-                  />
-                  <span className="font-semibold">Car Accessories</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <IoIosColorFill className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Car Accessories
+                  </span>
                 </Link>
+
+                {/* Engine Oil */}
                 <Link
                   to="/products?category=Engine Oil"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <FaOilCan size={22} className="sm:w-[22px] sm:h-[22px]" />
-                  <span className="font-semibold">Engine oil</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <FaOilCan className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Engine oil
+                  </span>
                 </Link>
+
+                {/* Filters */}
                 <Link
                   to="/products?category=Filters"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <LiaFilterSolid
-                    size={22}
-                    className="sm:w-[22px] sm:h-[22px]"
-                  />
-                  <span className="font-semibold">Filters</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <LiaFilterSolid className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Filters
+                  </span>
                 </Link>
+
+                {/* Brakes */}
                 <Link
                   to="/products?category=Brakes"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <GiStoneWheel size={22} className="sm:w-[22px] sm:h-[22px]" />
-                  <span className="font-semibold">Brakes</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <GiStoneWheel className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Brakes
+                  </span>
                 </Link>
+
+                {/* Motorcycle */}
                 <Link
                   to="/products?category=Motorcycle"
-                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-2">
-                  <FaMotorcycle size={22} className="sm:w-[22px] sm:h-[22px]" />
-                  <span className="font-semibold">Motorcycle parts</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <FaMotorcycle className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Motorcycle parts
+                  </span>
                 </Link>
+
+                {/* Tyres - يظهر من 640px */}
                 <Link
                   to="/products?category=Tyres"
-                  className="hidden sm:flex text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors items-center gap-2">
-                  <GiTyre size={22} />
-                  <span className="font-semibold">Tyres</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <GiTyre className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Tyres
+                  </span>
                 </Link>
+
+                {/* Wheels - يظهر من 768px */}
                 <Link
                   to="/products?category=Wheels"
-                  className="hidden md:flex text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors items-center gap-2">
-                  <GiCarWheel size={22} />
-                  <span className="font-semibold">Wheels</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <GiCarWheel className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Wheels
+                  </span>
                 </Link>
+
+                {/* Tools - يظهر من 1024px */}
                 <Link
                   to="/products?category=Tools"
-                  className="hidden lg:flex text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors items-center gap-2">
-                  <Wrench size={22} />
-                  <span className="font-semibold">Tools</span>
+                  className="text-gray-400 font-semibold hover:text-[#ff6b35] transition-colors flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <Wrench className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
+                  <span className="text-xs sm:text-sm whitespace-nowrap">
+                    Tools
+                  </span>
                 </Link>
               </div>
             </div>
@@ -654,7 +675,6 @@ export default function Navbar() {
                           {category.name}
                         </h3>
                       </div>
-
                     </div>
                   </div>
                 );

@@ -100,3 +100,58 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* ========================================
+   🎯 GLOBAL SCROLL FIX
+   ========================================
+   Add this to your main CSS file (e.g., index.css or App.css)
+   ======================================== */
+
+/* ✅ Fix 1: Prevent scroll restoration on navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ✅ Fix 2: Reset scroll position on route change */
+body {
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* ✅ Fix 3: Ensure containers don't cause scroll jumps */
+#root {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ✅ Fix 4: Fix for React Router Links */
+a {
+  scroll-margin-top: 80px; /* Adjust based on your header height */
+}
+
+/* ✅ Fix 5: Fix for modals/overlays scroll lock */
+body.modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* ✅ Fix 6: Prevent scroll jump on button clicks */
+button:focus,
+a:focus {
+  outline-offset: 2px;
+}
+
+/* ✅ Fix 7: Fix for fixed headers causing scroll issues */
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
+/* ✅ Fix 8: Add smooth transitions */
+* {
+  scroll-behavior: smooth;
+}
